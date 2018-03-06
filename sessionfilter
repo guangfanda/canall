@@ -1,0 +1,60 @@
+package com.canall.market.Filter;
+
+import java.io.IOException;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+public class SessionFilter implements Filter{
+
+	public void destroy() {
+		
+	}
+
+	public void doFilter(ServletRequest request, ServletResponse response,
+			FilterChain chain) throws IOException, ServletException {
+		//强转两个对象
+		HttpServletRequest req = (HttpServletRequest)request;
+		HttpServletResponse resp = (HttpServletResponse)response;
+		//获取用户当前请求的地址   
+		String requestURI = req.getRequestURI();
+		//StringBuffer requestURL = req.getRequestURL();
+		HttpSession session = req.getSession();
+		Object name = session.getAttribute("flag123");
+		//session作用域中，是否有名字信息
+		if(name == null){
+			//如果没有名字，说明没登陆过，打回登录页面
+			if(requestURI.indexOf("login.jsp") != -1 || //本来就是要访问的登录页面，放行
+					requestURI.indexOf("/CanallUser") != -1 ||
+					requestURI.indexOf("/js/") != -1 || //放掉js包下的所有文件
+					requestURI.indexOf("/css/") != -1  ||
+					requestURI.indexOf("/moban/") != -1  ||
+					requestURI.indexOf("add.jsp") != -1  ||
+					requestURI.indexOf("/images/") != -1 ||
+					requestURI.indexOf("logout.jsp") != -1 ||
+					requestURI.indexOf("/market") != -1 ||
+					requestURI.indexOf("/data/") != -1 ||
+					requestURI.indexOf("/editor/") != -1 //放掉css包下的所有文件
+			){
+				chain.doFilter(request, response);
+			}else{
+				System.out.println("请先登录");
+				resp.sendRedirect(req.getContextPath()+"/CanallUser/gotoLogin");
+			}
+		}else{
+			//如果有名字，说明已经登录过了，放行
+			chain.doFilter(request, response);
+		}
+	}
+
+	public void init(FilterConfig arg0) throws ServletException {
+		
+	}
+
+}
